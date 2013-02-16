@@ -43,6 +43,9 @@
     <Reference Include="TheoraPlay">
       <HintPath>..\ThirdParty\Libs\TheoraPlay.dll</HintPath>
     </Reference>
+    <Reference Include="STBVorbis">
+      <HintPath>..\ThirdParty\Libs\STBVorbis.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -406,6 +409,7 @@
     <Compile Include="Content\ResourceContentManager.cs" />
     <Compile Include="Media\VideoSoundtrackType.cs" />
     <Compile Include="Audio\MSADPCMToPCM.cs" />
+    <Compile Include="Linux\Media\VorbisSong.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ThirdParty\Lidgren.Network\Lidgren.Network.Linux.csproj">

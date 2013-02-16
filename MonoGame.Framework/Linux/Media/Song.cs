@@ -40,34 +40,29 @@ purpose and non-infringement.
 
 using System;
 using System.IO;
-//using Tao.Sdl;
-
 using Microsoft.Xna.Framework.Audio;
-
-
 
 namespace Microsoft.Xna.Framework.Media
 {
 	public sealed class Song : IEquatable<Song>, IDisposable
 	{
-		private IntPtr _audioData;
 		
 		private string _name;
 		private int _playCount;
-		private int _volume; // in SDL units from 0 to 128
+
+        private VorbisSong vs;
 
 		internal delegate void FinishedPlayingHandler(object sender, EventArgs args);
-
-        internal Song(string fileName, int durationMS)
-            : this(fileName)
+		
+        // We can work out our own duration, kthxbai.
+        internal Song (string fileName, int durationMS) : this(fileName)
         {
-            _Duration = TimeSpan.FromMilliseconds(durationMS);
         }
+
 		internal Song(string fileName)
 		{			
 			_name = fileName;
-
-            _audioData = IntPtr.Zero; //Tao.Sdl.SdlMixer.Mix_LoadMUS(fileName);
+            vs = new VorbisSong(fileName);
 		}
 		
 		internal void OnFinishedPlaying ()
@@ -98,8 +93,7 @@ namespace Microsoft.Xna.Framework.Media
 		{
 			if (disposing)
 			{
-				//if (_audioData != IntPtr.Zero)
-				//	SdlMixer.Mix_FreeMusic(_audioData);
+                Stop ();
 			}
 		}
 
@@ -140,60 +134,53 @@ namespace Microsoft.Xna.Framework.Media
 		
 		internal void Play()
 		{			
-			if (_audioData == IntPtr.Zero)
-				return;
-
+            vs.Play();
 			// according to MSDN and http://forums.create.msdn.com/forums/p/85718/614272.aspx
 			// songs can only be played with the MediaPlayer class. And this class can only play one song at a time.
 			// this means that we can easily use the MusicFinished event here without the risk of receiving an event multiple times.
 			// also, the DonePlaying handler of this class will only be set while the song is actually played in MediaPlayer.
 			// when the next song starts playing, this will then be overwritten, which shouldn't be a problem
-			//SdlMixer.Mix_HookMusicFinished(OnFinishedPlaying);
-			//SdlMixer.Mix_PlayMusic(_audioData, 0);
+
 			_playCount++;
 		}
 
 		internal void Resume()
 		{
-			//SdlMixer.Mix_ResumeMusic();
+            vs.Resume();
 		}
 		
 		internal void Pause()
 		{			
-			//SdlMixer.Mix_PauseMusic();
+            vs.Pause();
 		}
 		
 		internal void Stop()
 		{
-			//SdlMixer.Mix_HaltMusic();			
+            vs.Stop();
 			_playCount = 0;
 		}
 		
 		internal float Volume
 		{
-			// sdl volume goes from 0 to 128 instead of 0 to 1
-			get { return _volume / 128f; }
+			get { return vs.Volume; }
 			set {
-				_volume = (int)(value * 128);
-				//SdlMixer.Mix_VolumeMusic(_volume);
+                vs.Volume = value;
+				
 			}			
 		}
 		
-        // Returns the duration of song
-        public TimeSpan Duration
+		public TimeSpan Duration
 		{
 			get {
-				return _Duration;
+				
+                return vs.Duration;
 			}
 		}
-        private TimeSpan _Duration = TimeSpan.Zero;
 		
-		// TODO: Implement
 		public TimeSpan Position
 		{
 			get {
-				// not implemented in sdl?
-				return new TimeSpan(0);
+				return vs.Position;
 			}
 		}
 
