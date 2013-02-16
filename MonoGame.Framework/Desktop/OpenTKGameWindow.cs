@@ -202,6 +202,7 @@ namespace Microsoft.Xna.Framework
         private void UpdateWindowState()
         {
             // we should wait until window's not fullscreen to resize
+            //window.WindowState = windowState;
             if (updateClientBounds)
             {
                 window.ClientRectangle = new System.Drawing.Rectangle(clientBounds.X,
@@ -221,7 +222,7 @@ namespace Microsoft.Xna.Framework
                 
                 // fixes issue on linux (and windows?) that AllowUserResizing is not set any more when exiting fullscreen mode
                 WindowBorder desired = AllowUserResizing ? WindowBorder.Resizable : WindowBorder.Fixed;
-                if (desired != window.WindowBorder && window.WindowState != WindowState.Fullscreen)
+                //if (desired != window.WindowBorder && window.WindowState != WindowState.Fullscreen)
                     window.WindowBorder = desired;
             }
 
@@ -323,18 +324,16 @@ namespace Microsoft.Xna.Framework
             // FIXME: This entire function is probably a hack. -flibit
             //if (!updateClientBounds)
             {
-                // Unlock the window...
-                AllowUserResizing = true;
-                
+
                 // Set the variables...
                 updateClientBounds = true;
                 this.clientBounds = clientBounds;
                 
                 // Actually change the window size...
                 window.ClientSize = new Size(clientBounds.Width, clientBounds.Height);
-                
-                // ... and lock again. We out.
-                AllowUserResizing = false;
+
+                // Update the fullscreen state should it have changed
+                window.WindowState = windowState;
             }
         }
 
