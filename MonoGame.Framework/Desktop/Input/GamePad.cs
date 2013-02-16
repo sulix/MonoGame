@@ -42,7 +42,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using Tao.Sdl;
+//using Tao.Sdl;
 using System.Xml.Serialization;
 
 namespace Microsoft.Xna.Framework.Input
@@ -289,8 +289,9 @@ namespace Microsoft.Xna.Framework.Input
             }
             
 #if DEBUG
-			Console.WriteLine("Number of joysticks: " + Sdl.SDL_NumJoysticks());
+			//Console.WriteLine("Number of joysticks: " + Sdl.SDL_NumJoysticks());
 #endif
+            /*
 			// Limit to the first 4 sticks to avoid crashes
 			int numSticks = Math.Min(4, Sdl.SDL_NumJoysticks());
 			for (int x = 0; x < numSticks; x++)
@@ -413,20 +414,21 @@ namespace Microsoft.Xna.Framework.Input
 				// Suggestion: Xbox Guide button <=> BigButton
 				//pc.BigButton.ID = 8;
 				//pc.BigButton.Type = InputType.Button;
-
+*/
 #if DEBUG
-				int numbuttons = Sdl.SDL_JoystickNumButtons(devices[x]);
+/*				int numbuttons = Sdl.SDL_JoystickNumButtons(devices[x]);
 				Console.WriteLine("Number of buttons for joystick: " + x + " - " + numbuttons);
 
 				int numaxes = Sdl.SDL_JoystickNumAxes(devices[x]);
 				Console.WriteLine("Number of axes for joystick: " + x + " - " + numaxes);
 
 				int numhats = Sdl.SDL_JoystickNumHats(devices[x]);
-				Console.WriteLine("Number of PovHats for joystick: " + x + " - " + numhats);
+				Console.WriteLine("Number of PovHats for joystick: " + x + " - " + numhats);*/
 #endif
 
-				settings[x] = pc;
-			}
+				//settings[x] = pc;
+			//}
+
 		}
 
         static Settings PrepSettings()
@@ -466,7 +468,7 @@ namespace Microsoft.Xna.Framework.Input
         		PadConfig pc = settings[i];
         		if (pc != null)
                 {
-        			devices[i] = Sdl.SDL_JoystickOpen (pc.Index);
+        			//devices[i] = Sdl.SDL_JoystickOpen (pc.Index);
 			    }
 		    }
 
@@ -653,8 +655,8 @@ namespace Microsoft.Xna.Framework.Input
         public static GamePadState GetState(PlayerIndex playerIndex, GamePadDeadZone deadZoneMode)
         {
             PrepSettings();
-            if (sdl)
-				Sdl.SDL_JoystickUpdate();
+            //if (sdl)
+			//	Sdl.SDL_JoystickUpdate();
             return ReadState(playerIndex, deadZoneMode);
         }
         //

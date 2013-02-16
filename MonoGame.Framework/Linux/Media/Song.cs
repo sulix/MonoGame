@@ -40,7 +40,7 @@ purpose and non-infringement.
 
 using System;
 using System.IO;
-using Tao.Sdl;
+//using Tao.Sdl;
 
 using Microsoft.Xna.Framework.Audio;
 
@@ -67,7 +67,7 @@ namespace Microsoft.Xna.Framework.Media
 		{			
 			_name = fileName;
 
-			_audioData = Tao.Sdl.SdlMixer.Mix_LoadMUS(fileName);
+            _audioData = IntPtr.Zero; //Tao.Sdl.SdlMixer.Mix_LoadMUS(fileName);
 		}
 		
 		internal void OnFinishedPlaying ()
@@ -98,8 +98,8 @@ namespace Microsoft.Xna.Framework.Media
 		{
 			if (disposing)
 			{
-				if (_audioData != IntPtr.Zero)
-					SdlMixer.Mix_FreeMusic(_audioData);
+				//if (_audioData != IntPtr.Zero)
+				//	SdlMixer.Mix_FreeMusic(_audioData);
 			}
 		}
 
@@ -148,24 +148,24 @@ namespace Microsoft.Xna.Framework.Media
 			// this means that we can easily use the MusicFinished event here without the risk of receiving an event multiple times.
 			// also, the DonePlaying handler of this class will only be set while the song is actually played in MediaPlayer.
 			// when the next song starts playing, this will then be overwritten, which shouldn't be a problem
-			SdlMixer.Mix_HookMusicFinished(OnFinishedPlaying);
-			SdlMixer.Mix_PlayMusic(_audioData, 0);
+			//SdlMixer.Mix_HookMusicFinished(OnFinishedPlaying);
+			//SdlMixer.Mix_PlayMusic(_audioData, 0);
 			_playCount++;
 		}
 
 		internal void Resume()
 		{
-			SdlMixer.Mix_ResumeMusic();
+			//SdlMixer.Mix_ResumeMusic();
 		}
 		
 		internal void Pause()
 		{			
-			SdlMixer.Mix_PauseMusic();
+			//SdlMixer.Mix_PauseMusic();
 		}
 		
 		internal void Stop()
 		{
-			SdlMixer.Mix_HaltMusic();			
+			//SdlMixer.Mix_HaltMusic();			
 			_playCount = 0;
 		}
 		
@@ -175,7 +175,7 @@ namespace Microsoft.Xna.Framework.Media
 			get { return _volume / 128f; }
 			set {
 				_volume = (int)(value * 128);
-				SdlMixer.Mix_VolumeMusic(_volume);
+				//SdlMixer.Mix_VolumeMusic(_volume);
 			}			
 		}
 		

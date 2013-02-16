@@ -113,8 +113,8 @@ namespace Microsoft.Xna.Framework
             
 #if LINUX
             // also set up SdlMixer to play background music. If one of these functions fails, we will not get any background music (but that should rarely happen)
-            Tao.Sdl.Sdl.SDL_InitSubSystem(Tao.Sdl.Sdl.SDL_INIT_AUDIO);
-            Tao.Sdl.SdlMixer.Mix_OpenAudio(44100, (short)Tao.Sdl.Sdl.AUDIO_S16SYS, 2, 1024);			
+            //Tao.Sdl.Sdl.SDL_InitSubSystem(Tao.Sdl.Sdl.SDL_INIT_AUDIO);
+            //Tao.Sdl.SdlMixer.Mix_OpenAudio(44100, (short)Tao.Sdl.Sdl.AUDIO_S16SYS, 2, 1024);			
 #endif
         }
 
@@ -142,7 +142,7 @@ namespace Microsoft.Xna.Framework
                 _view.Window.Exit();
             }
 #if LINUX
-            Tao.Sdl.SdlMixer.Mix_CloseAudio();
+            //Tao.Sdl.SdlMixer.Mix_CloseAudio();
 #endif
             OpenTK.DisplayDevice.Default.RestoreResolution();
         }
