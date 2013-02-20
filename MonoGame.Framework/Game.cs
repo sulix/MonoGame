@@ -363,6 +363,9 @@ namespace Microsoft.Xna.Framework
 
         public void Exit()
         {
+            // We need to make sure the game stops playing music, which could otherwise
+            // prevent the process from exiting.
+            Media.MediaPlayer.Stop();
             Platform.Exit();
         }
 

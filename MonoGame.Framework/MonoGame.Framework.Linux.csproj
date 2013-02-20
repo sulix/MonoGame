@@ -37,14 +37,14 @@
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Drawing" />
-    <Reference Include="OpenTK">
-      <HintPath>..\ThirdParty\Libs\OpenTK.dll</HintPath>
-    </Reference>
     <Reference Include="TheoraPlay">
       <HintPath>..\ThirdParty\Libs\TheoraPlay.dll</HintPath>
     </Reference>
     <Reference Include="STBVorbis">
       <HintPath>..\ThirdParty\Libs\STBVorbis.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenTK">
+      <HintPath>..\ThirdParty\Libs\OpenTK.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

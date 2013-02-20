@@ -40,16 +40,12 @@ purpose and non-infringement.
 
 using System;
 using System.IO;
-using System.Threading;
 using System.Collections.Generic;
 #if MONOMAC
 using MonoMac.OpenAL;
 #else
 using OpenTK.Audio.OpenAL;
 #endif
-using Microsoft.Xna.Framework.Audio;
-
-
 
 namespace Microsoft.Xna.Framework.Media
 {
@@ -63,15 +59,7 @@ namespace Microsoft.Xna.Framework.Media
 
         private uint sizeInSamples;
 
-        private int oal_source;
-
-        private float oal_volume;
-
-        private Thread streamingThread;
-
-        private bool isPlaying;
-
-        private bool isPaused;
+	private bool isFinished;
 
         internal VorbisSong (string fileName)
         {           
@@ -89,11 +77,7 @@ namespace Microsoft.Xna.Framework.Media
 
             sizeInSamples = STBVorbis.StreamLengthInSamples(vorbisStruct);
 
-            isPlaying = false;
-
-            isPaused = false;
-
-            streamingThread = new Thread(new ThreadStart(this.DecodeAudio));
+	    isFinished = false;
 
         }
 
@@ -108,10 +92,6 @@ namespace Microsoft.Xna.Framework.Media
         {
             if (disposing)
             {
-                if (isPlaying)
-                {
-                    Stop ();
-                }
                 if (vorbisStruct != IntPtr.Zero)
                 {
                     STBVorbis.Close(vorbisStruct);
@@ -119,48 +99,10 @@ namespace Microsoft.Xna.Framework.Media
             }
         }
 
-        internal void Play()
-        {
-            if (vorbisStruct == IntPtr.Zero)
-                return;
-
-            isPlaying = true;
-            isPaused = false;
-
-            streamingThread.Start();
-        }
-
-        internal void Resume()
-        {
-            //TODO: Implement
-            isPaused = false;
-            AL.SourcePlay(oal_source);
-        }
-        
-        internal void Pause()
-        {           
-            //TODO: Implement
-            isPaused = true;
-            AL.SourcePause(oal_source);
-        }
-        
-        internal void Stop()
-        {
-            //TODO: Implement
-            isPlaying = false;
-            AL.SourceStop(oal_source);
-            streamingThread.Join();
-
-        }
-        
-        internal float Volume
-        {
-            get { return oal_volume; }
-            set {
-                oal_volume = value;
-                AL.Source (oal_source, ALSourcef.Gain, oal_volume);
-            }           
-        }
+        public bool IsSongFinished()
+	{
+		return isFinished || (STBVorbis.GetSampleOffset(vorbisStruct) >= sizeInSamples);
+	}
         
         public TimeSpan Duration
         {
@@ -168,39 +110,39 @@ namespace Microsoft.Xna.Framework.Media
                 return new TimeSpan(1000 * sizeInSamples / vorbisInfo.sample_rate);
             }
         }
-        
-        // TODO: Implement
-        public TimeSpan Position
-        {
+
+        public int SampleRate {
             get {
-                //TODO: Implement
-                return new TimeSpan(0);
+                return (int)vorbisInfo.sample_rate;
             }
         }
 
-        #region The Vorbis Streaming Thread
+        public int BufferSize {
+            get {
+                return 4096;
+            }
+        }
+
+        #region The Vorbis Decode Function
         // This is basically copied from the vorbis streaming in VideoPlayer.cs
         // However, that uses libvorbis/TheoraPlay and we use stb_vorbis. We also
         // are using 16 bit ints, not floats, for ease of use in the API.
 
-        private void StreamAudio (int buffer)
+        internal void FillBuffer(int buffer)
         {
-            // The size of our abstracted buffer.
-            int BUFFER_SIZE = 4096;// * vorbisInfo.channels;
-            
             // Our buffer. temp_data is used to get around the lack of
             // efficient subarrays in C#. It takes one copy, which isn't _too_ bad.
-            short[] data = new short[BUFFER_SIZE];
-            short[] temp_data = new short[BUFFER_SIZE];
+            short[] data = new short[BufferSize];
+            short[] temp_data = new short[BufferSize];
 
             int readData = 0;
 
             // Add to the buffer from the decoder until it's large enough.
-            while (readData < BUFFER_SIZE && isPlaying) {
+            while (readData < BufferSize) {
                 int readCall = STBVorbis.GetSamplesShortInterleaved (vorbisStruct,
                                                                    vorbisInfo.channels,
                                                                    temp_data,
-                                                                   BUFFER_SIZE - readData)
+                                                                   BufferSize - readData)
                         * vorbisInfo.channels;
 
                 if (readCall > 0)
@@ -221,49 +163,10 @@ namespace Microsoft.Xna.Framework.Media
                     (int)vorbisInfo.sample_rate
                 );
             } else {
-                isPlaying = false;
+                isFinished = true;
             }
         }
         
-        private void DecodeAudio()
-        {
-            // The number of AL buffers to queue into the source.
-            const int NUM_BUFFERS = 2;
-
-            oal_source = AL.GenSource();
-
-            // Generate the alternating buffers.
-            int[] buffers = AL.GenBuffers(NUM_BUFFERS);
-            
-            // Fill and queue the buffers.
-            for (int i = 0; i < NUM_BUFFERS; i++)
-            {
-                StreamAudio(buffers[i]);
-            }
-            AL.SourceQueueBuffers(oal_source, NUM_BUFFERS, buffers);
-
-            AL.SourcePlay(oal_source);
-
-            Console.WriteLine(AL.GetErrorString(AL.GetError()));
-
-            while (isPlaying && (STBVorbis.GetSampleOffset(vorbisStruct) < sizeInSamples)) 
-            {
-                // When a buffer has been processed, refill it.
-                int processed;
-                AL.GetSource(oal_source, ALGetSourcei.BuffersProcessed, out processed);
-                while (processed-- > 0 && isPlaying)
-                {
-                    int buffer = AL.SourceUnqueueBuffer(oal_source);
-                    StreamAudio(buffer);
-                    AL.SourceQueueBuffer(oal_source, buffer);
-                }
-            }
-
-            isPlaying = false;
-
-            AL.DeleteSource(oal_source);
-            AL.DeleteBuffers(buffers);
-        }
         #endregion
 
     }

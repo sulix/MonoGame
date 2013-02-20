@@ -40,6 +40,12 @@ purpose and non-infringement.
 
 using System;
 using System.IO;
+using System.Threading;
+#if MONOMAC
+using MonoMac.OpenAL;
+#else
+using OpenTK.Audio.OpenAL;
+#endif
 using Microsoft.Xna.Framework.Audio;
 
 namespace Microsoft.Xna.Framework.Media
@@ -50,7 +56,16 @@ namespace Microsoft.Xna.Framework.Media
 		private string _name;
 		private int _playCount;
 
-        private VorbisSong vs;
+		private int oal_source;
+
+		private float oal_volume;
+
+		private bool isPlaying;
+        private bool isPaused;
+
+		private Thread streamingThread;
+
+		private VorbisSong songDecoder;
 
 		internal delegate void FinishedPlayingHandler(object sender, EventArgs args);
 		
@@ -62,7 +77,10 @@ namespace Microsoft.Xna.Framework.Media
 		internal Song(string fileName)
 		{			
 			_name = fileName;
-            vs = new VorbisSong(fileName);
+			songDecoder = new VorbisSong(fileName);
+		        streamingThread = new Thread(new ThreadStart(this.DecodeAudio));
+			isPlaying = false;
+            isPaused = true;
 		}
 		
 		internal void OnFinishedPlaying ()
@@ -93,7 +111,7 @@ namespace Microsoft.Xna.Framework.Media
 		{
 			if (disposing)
 			{
-                Stop ();
+		                Stop ();
 			}
 		}
 
@@ -134,7 +152,9 @@ namespace Microsoft.Xna.Framework.Media
 		
 		internal void Play()
 		{			
-            vs.Play();
+			streamingThread.Start();
+			isPlaying = true;
+            isPaused = false;
 			// according to MSDN and http://forums.create.msdn.com/forums/p/85718/614272.aspx
 			// songs can only be played with the MediaPlayer class. And this class can only play one song at a time.
 			// this means that we can easily use the MusicFinished event here without the risk of receiving an event multiple times.
@@ -146,41 +166,46 @@ namespace Microsoft.Xna.Framework.Media
 
 		internal void Resume()
 		{
-            vs.Resume();
+            isPaused = false;
+			    AL.SourcePlay(oal_source);
+                
 		}
 		
 		internal void Pause()
 		{			
-            vs.Pause();
+            isPaused = false;
+			    AL.SourcePause(oal_source);
 		}
 		
 		internal void Stop()
 		{
-            vs.Stop();
+			    isPlaying = false;
+            isPaused = true;
+			    AL.SourceStop(oal_source);
+			    streamingThread.Join();
 			_playCount = 0;
 		}
 		
 		internal float Volume
 		{
-			get { return vs.Volume; }
-			set {
-                vs.Volume = value;
-				
-			}			
+		    get { return oal_volume; }
+		    set {
+			oal_volume = value;
+			AL.Source (oal_source, ALSourcef.Gain, oal_volume);
+		    }           
 		}
 		
 		public TimeSpan Duration
 		{
-			get {
-				
-                return vs.Duration;
+			get {		
+		                return songDecoder.Duration;
 			}
 		}
 		
 		public TimeSpan Position
 		{
 			get {
-				return vs.Position;
+				return new TimeSpan(0);;
 			}
 		}
 
@@ -213,6 +238,51 @@ namespace Microsoft.Xna.Framework.Media
 		{
 			get { return 0; }
 		}
+
+		#region Decode thread
+		private void DecodeAudio()
+		{
+		    // The number of AL buffers to queue into the source.
+		    const int NUM_BUFFERS = 2;
+
+		    oal_source = AL.GenSource();
+
+		    // Generate the alternating buffers.
+		    int[] buffers = AL.GenBuffers(NUM_BUFFERS);
+		    
+		    // Fill and queue the buffers.
+		    for (int i = 0; i < NUM_BUFFERS; i++)
+		    {
+			songDecoder.FillBuffer(buffers[i]);
+		    }
+		    AL.SourceQueueBuffers(oal_source, NUM_BUFFERS, buffers);
+
+		    AL.SourcePlay(oal_source);
+
+		    while (isPlaying && (!songDecoder.IsSongFinished())) 
+		    {
+			// When a buffer has been processed, refill it.
+			int processed;
+			AL.GetSource(oal_source, ALGetSourcei.BuffersProcessed, out processed);
+    			while (processed-- > 0 && isPlaying)
+    			{
+    			    int buffer = AL.SourceUnqueueBuffer(oal_source);
+    			    songDecoder.FillBuffer(buffer);
+    			    AL.SourceQueueBuffer(oal_source, buffer);
+    			}
+                // Make sure we keep playing if needed.
+                if (!isPaused && AL.GetSourceState(oal_source) != ALSourceState.Playing)
+                    AL.SourcePlay(oal_source);
+		    }
+
+		    isPlaying = false;
+
+		    AL.DeleteSource(oal_source);
+		    AL.DeleteBuffers(buffers);
+
+            MediaPlayer.OnSongFinishedPlaying(this, EventArgs.Empty);
+		}
+		#endregion
 	}
 }
 
