@@ -66,6 +66,9 @@ namespace Microsoft.Xna.Framework.Audio
 		private OpenALSoundController controller;
 		private SoundEffect soundEffect;
         
+        private Vector3 position = new Vector3(0.0f, 0.0f, 0.1f);
+        private Vector3 velocity = new Vector3(0.0f, 0.0f, 0.0f);
+        
         // Used to prevent outdated positional audio data from being used
         private bool positionalAudio;
 
@@ -205,18 +208,18 @@ namespace Microsoft.Xna.Framework.Audio
 				// set up orientation matrix
 				Matrix orientation = Matrix.CreateWorld(Vector3.Zero, listener.Forward, listener.Up);
 				// set up our final position and velocity according to orientation of listener
-				Vector3 finalPos = new Vector3(x + posOffset.X, y + posOffset.Y, z + posOffset.Z);
-				finalPos = Vector3.Transform(finalPos, orientation);
-				Vector3 finalVel = emitter.Velocity;
-				finalVel = Vector3.Transform(finalVel, orientation);
+				position = new Vector3(x + posOffset.X, y + posOffset.Y, z + posOffset.Z);
+				position = Vector3.Transform(position, orientation);
+				velocity = emitter.Velocity;
+				velocity = Vector3.Transform(velocity, orientation);
              
                 // FIXME: This is totally arbitrary. I dunno the exact ratio here.
-                finalPos /= 100.0f;
-                finalVel /= 100.0f;
+                position /= 100.0f;
+                velocity /= 100.0f;
 				
 				// set the position based on relative positon
-				AL.Source(sourceId, ALSource3f.Position, finalPos.X, finalPos.Y, finalPos.Z);
-				AL.Source(sourceId, ALSource3f.Velocity, finalVel.X, finalVel.Y, finalVel.Z);
+				AL.Source(sourceId, ALSource3f.Position, position.X, position.Y, position.Z);
+				AL.Source(sourceId, ALSource3f.Velocity, velocity.X, velocity.Y, velocity.Z);
 			}
             
             positionalAudio = true;
@@ -274,6 +277,8 @@ namespace Microsoft.Xna.Framework.Audio
             if (positionalAudio)
             {
 			    positionalAudio = false;
+                AL.Source(sourceId, ALSource3f.Position, position.X, position.Y, position.Z);
+                AL.Source(sourceId, ALSource3f.Velocity, velocity.X, velocity.Y, velocity.Z);
             }
             else
             {
@@ -300,8 +305,12 @@ namespace Microsoft.Xna.Framework.Audio
 			}
 			bool isSourceAvailable = controller.ReserveSource (soundBuffer);
             if (!isSourceAvailable)
-                throw new InstancePlayLimitException();
-
+            {
+                System.Console.WriteLine("WARNING: AL SOURCE WAS NOT AVAILABLE. SKIPPING.");
+                return;
+                //throw new InstancePlayLimitException();
+            }
+            
             int bufferId = soundBuffer.OpenALDataBuffer;
             AL.Source(soundBuffer.SourceId, ALSourcei.Buffer, bufferId);
 			ApplyState ();
@@ -329,7 +338,11 @@ namespace Microsoft.Xna.Framework.Audio
             }
             else
             {
-                Play();
+                /* We cannot assume that Resume is the same thing as Play.
+                 * Resume should only work in cooperation with Pause!
+                 * -flibit
+                 */
+                // Play();
             }
 		}
 

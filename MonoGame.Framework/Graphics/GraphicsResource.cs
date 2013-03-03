@@ -71,7 +71,8 @@ namespace Microsoft.Xna.Framework.Graphics
         ~GraphicsResource()
         {
             // Pass false so the managed objects are not released
-            Dispose(false);
+            // FIXME: How, I say, how in the fuck was this supposed to work? -flibit
+            // Dispose(false);
         }
 
         /// <summary>
@@ -133,13 +134,14 @@ namespace Microsoft.Xna.Framework.Graphics
         /// <remarks>Native resources should always be released regardless of the value of the disposing parameter.</remarks>
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposed)
-            {
-                if (disposing)
-                {
+            // FIXME: What was this? No, really, what? -flibit
+            //if (!disposed)
+            //{
+                //if (disposing)
+                //{
                     // Release managed objects
                     // ...
-                }
+                //}
 
                 // Release native objects
                 // ...
@@ -156,7 +158,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
                 graphicsDevice = null;
                 disposed = true;
-            }
+            //}
         }
 
 		public event EventHandler<EventArgs> Disposing;

@@ -14,6 +14,8 @@ namespace Microsoft.Xna.Framework.Audio
 		bool complexSound;
 		XactClip[] soundClips;
 		SoundEffectInstance wave;
+        
+        float staticVolume;
 		
 		public XactSound (SoundBank soundBank, BinaryReader soundReader, uint soundOffset)
 		{
@@ -105,7 +107,8 @@ namespace Microsoft.Xna.Framework.Audio
 			}
             
             // FIXME: This is totally arbitrary. I dunno the exact ratio here.
-            Volume = volume / 256.0f;
+            staticVolume = volume / 256.0f;
+            Volume = 1.0f;
 			
 			soundReader.BaseStream.Seek (oldPosition, SeekOrigin.Begin);
 		}
@@ -195,10 +198,10 @@ namespace Microsoft.Xna.Framework.Audio
 			set {
 				if (complexSound) {
 					foreach (XactClip clip in soundClips) {
-						clip.Volume = value;
+						clip.Volume = value * staticVolume;
 					}
 				} else {
-					wave.Volume = value;
+					wave.Volume = value * staticVolume;
 				}
 			}
 		}
