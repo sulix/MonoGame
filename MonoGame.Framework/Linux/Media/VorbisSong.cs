@@ -83,6 +83,11 @@ namespace Microsoft.Xna.Framework.Media
 
         }
 
+        public bool IsLoaded {
+            get {
+                return (vorbisStruct != IntPtr.Zero);
+            }
+        }
 
         public void Dispose()
         {

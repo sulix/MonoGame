@@ -151,7 +151,8 @@ namespace Microsoft.Xna.Framework.Media
 		}
 		
 		internal void Play()
-		{			
+		{	
+            if (!songDecoder.IsLoaded) return;
 			streamingThread.Start();
 			isPlaying = true;
             isPaused = false;
@@ -167,22 +168,25 @@ namespace Microsoft.Xna.Framework.Media
 		internal void Resume()
 		{
             isPaused = false;
+            if (!songDecoder.IsLoaded) return;
 			    AL.SourcePlay(oal_source);
                 
 		}
 		
 		internal void Pause()
-		{			
+		{
+            if (!songDecoder.IsLoaded) return;
             isPaused = false;
 			    AL.SourcePause(oal_source);
 		}
 		
-		internal void Stop()
-		{
-			    isPlaying = false;
-            isPaused = true;
-			    AL.SourceStop(oal_source);
-			    streamingThread.Join();
+		internal void Stop ()
+        {
+            if (songDecoder.IsLoaded && isPlaying) {
+                isPlaying = false;
+                isPaused = true;
+                streamingThread.Join ();
+            }
 			_playCount = 0;
 		}
 		
@@ -245,6 +249,8 @@ namespace Microsoft.Xna.Framework.Media
 		    // The number of AL buffers to queue into the source.
 		    const int NUM_BUFFERS = 2;
 
+            if (!songDecoder.IsLoaded) return;
+
 		    oal_source = AL.GenSource();
 
 		    // Generate the alternating buffers.
@@ -274,6 +280,8 @@ namespace Microsoft.Xna.Framework.Media
                 if (!isPaused && AL.GetSourceState(oal_source) != ALSourceState.Playing)
                     AL.SourcePlay(oal_source);
 		    }
+
+            AL.SourceStop(oal_source);
 
 		    isPlaying = false;
 
