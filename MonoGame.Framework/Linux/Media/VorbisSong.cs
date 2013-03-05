@@ -71,6 +71,8 @@ namespace Microsoft.Xna.Framework.Media
 
             if (error != 0) {
                 Console.WriteLine (String.Format ("stb_vorbis error: {0}", error));
+                vorbisStruct = IntPtr.Zero;
+                return;
             } 
 
             vorbisInfo = STBVorbis.GetInfo(vorbisStruct);
@@ -101,18 +103,21 @@ namespace Microsoft.Xna.Framework.Media
 
         public bool IsSongFinished()
 	{
+            if (vorbisStruct == IntPtr.Zero) return false;
 		return isFinished || (STBVorbis.GetSampleOffset(vorbisStruct) >= sizeInSamples);
 	}
         
         public TimeSpan Duration
         {
             get {
+            if (vorbisStruct == IntPtr.Zero) return new TimeSpan(0);
                 return new TimeSpan(1000 * sizeInSamples / vorbisInfo.sample_rate);
             }
         }
 
         public int SampleRate {
             get {
+                if (vorbisStruct == IntPtr.Zero) return 0;
                 return (int)vorbisInfo.sample_rate;
             }
         }
@@ -136,6 +141,9 @@ namespace Microsoft.Xna.Framework.Media
             short[] temp_data = new short[BufferSize];
 
             int readData = 0;
+
+            // We don't dare do anything if no file is loaded.
+            if (vorbisStruct == IntPtr.Zero) return;
 
             // Add to the buffer from the decoder until it's large enough.
             while (readData < BufferSize) {
