@@ -244,51 +244,56 @@ namespace Microsoft.Xna.Framework.Media
 		}
 
 		#region Decode thread
-		private void DecodeAudio()
-		{
-		    // The number of AL buffers to queue into the source.
-		    const int NUM_BUFFERS = 2;
+		private void DecodeAudio ()
+        {
+            // The number of AL buffers to queue into the source.
+            const int NUM_BUFFERS = 2;
 
-            if (!songDecoder.IsLoaded) return;
+            if (!songDecoder.IsLoaded)
+                return;
 
-		    oal_source = AL.GenSource();
+            oal_source = AL.GenSource ();
 
-		    // Generate the alternating buffers.
-		    int[] buffers = AL.GenBuffers(NUM_BUFFERS);
+            // Generate the alternating buffers.
+            int[] buffers = AL.GenBuffers (NUM_BUFFERS);
 		    
-		    // Fill and queue the buffers.
-		    for (int i = 0; i < NUM_BUFFERS; i++)
-		    {
-			songDecoder.FillBuffer(buffers[i]);
-		    }
-		    AL.SourceQueueBuffers(oal_source, NUM_BUFFERS, buffers);
+            // Fill and queue the buffers.
+            for (int i = 0; i < NUM_BUFFERS; i++) {
+                songDecoder.FillBuffer (buffers [i]);
+            }
+            AL.SourceQueueBuffers (oal_source, NUM_BUFFERS, buffers);
 
-		    AL.SourcePlay(oal_source);
+            AL.SourcePlay (oal_source);
 
-		    while (isPlaying && (!songDecoder.IsSongFinished())) 
-		    {
-			// When a buffer has been processed, refill it.
-			int processed;
-			AL.GetSource(oal_source, ALGetSourcei.BuffersProcessed, out processed);
-    			while (processed-- > 0 && isPlaying)
-    			{
-    			    int buffer = AL.SourceUnqueueBuffer(oal_source);
-    			    songDecoder.FillBuffer(buffer);
-    			    AL.SourceQueueBuffer(oal_source, buffer);
-    			}
+            while (isPlaying && (!songDecoder.IsSongFinished())) {
+                // When a buffer has been processed, refill it.
+                int processed;
+                AL.GetSource (oal_source, ALGetSourcei.BuffersProcessed, out processed);
+                while (processed-- > 0 && isPlaying) {
+                    int buffer = AL.SourceUnqueueBuffer (oal_source);
+                    songDecoder.FillBuffer (buffer);
+                    AL.SourceQueueBuffer (oal_source, buffer);
+                }
                 // Make sure we keep playing if needed.
-                if (!isPaused && AL.GetSourceState(oal_source) != ALSourceState.Playing)
-                    AL.SourcePlay(oal_source);
-		    }
+                if (!isPaused && AL.GetSourceState (oal_source) != ALSourceState.Playing)
+                    AL.SourcePlay (oal_source);
+            }
 
-            AL.SourceStop(oal_source);
+            AL.SourceStop (oal_source);
+
+            // We only want to call OnSongFinishedPlaying if we actullly finished
+            // playing naturally, not if we were stopped. This should fix the
+            // segfaults that were occuring with MediaQueue.
+            if (isPlaying) {
+                MediaPlayer.OnSongFinishedPlaying (this, EventArgs.Empty);
+            }
+
 
 		    isPlaying = false;
 
 		    AL.DeleteSource(oal_source);
 		    AL.DeleteBuffers(buffers);
 
-            MediaPlayer.OnSongFinishedPlaying(this, EventArgs.Empty);
 		}
 		#endregion
 	}
