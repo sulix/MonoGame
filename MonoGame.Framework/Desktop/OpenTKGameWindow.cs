@@ -198,15 +198,15 @@ namespace Microsoft.Xna.Framework
                 return;
 
             //If we've already got a pending change, do nothing
-            if (updateClientBounds)
-                return;
+            //if (updateClientBounds)
+            //    return;
             
             Game.GraphicsDevice.PresentationParameters.BackBufferWidth = winWidth;
             Game.GraphicsDevice.PresentationParameters.BackBufferHeight = winHeight;
 
-            ChangeClientBounds(winRect);
+            //ChangeClientBounds(winRect);
    
-            UpdateWindowState();
+            //UpdateWindowState();
 
             Game.GraphicsDevice.Viewport = new Viewport(window.ClientRectangle.X, window.ClientRectangle.Y, winWidth, winHeight);
             
