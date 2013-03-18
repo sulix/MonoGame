@@ -200,7 +200,9 @@ namespace Microsoft.Xna.Framework
             //If we've already got a pending change, do nothing
             //if (updateClientBounds)
             //    return;
-            
+
+            this.clientBounds = winRect;
+
             Game.GraphicsDevice.PresentationParameters.BackBufferWidth = winWidth;
             Game.GraphicsDevice.PresentationParameters.BackBufferHeight = winHeight;
 
@@ -208,7 +210,7 @@ namespace Microsoft.Xna.Framework
    
             //UpdateWindowState();
 
-            Game.GraphicsDevice.Viewport = new Viewport(window.ClientRectangle.X, window.ClientRectangle.Y, winWidth, winHeight);
+            Game.GraphicsDevice.Viewport = new Viewport(0, 0, winWidth, winHeight);
             
             OnClientSizeChanged();
         }
@@ -229,7 +231,7 @@ namespace Microsoft.Xna.Framework
         {
             // we should wait until window's not fullscreen to resize
             //window.WindowState = windowState;
-            if (updateClientBounds)
+            if (false)//updateClientBounds)
             {
                 window.ClientRectangle = new System.Drawing.Rectangle(clientBounds.X,
                                      clientBounds.Y, clientBounds.Width, clientBounds.Height);

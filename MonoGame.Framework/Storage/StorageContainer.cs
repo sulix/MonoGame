@@ -120,9 +120,12 @@ namespace Microsoft.Xna.Framework.Storage
 			// From the examples the root is based on MyDocuments folder
 #if WINDOWS_STOREAPP
             var saved = "";
+#elif LINUX
+            // On Linux, we want to keep things as flat as possible.
+            var saved = StorageDevice.StorageRoot;
 #else
-			var root = StorageDevice.StorageRoot;
-			var saved = Path.Combine(root,"SavedGames");
+            var root = StorageDevice.StorageRoot;
+            var saved = Path.Combine(root,"SavedGames");
 #endif
             _storagePath = Path.Combine(saved, name);
 			

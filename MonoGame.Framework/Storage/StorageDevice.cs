@@ -466,6 +466,9 @@ namespace Microsoft.Xna.Framework.Storage
 			get {
 #if WINRT
                 return ApplicationData.Current.LocalFolder.Path; 
+#elif (MONOMAC || LINUX)
+                // This should return .local/share and/or xdg path on linux. Needs testing on mac.
+                return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 #else
                 return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 #endif
