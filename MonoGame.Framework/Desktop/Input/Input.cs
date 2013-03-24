@@ -57,22 +57,16 @@ namespace Microsoft.Xna.Framework.Input
         {
             switch (Type)
             {
-                /*case InputType.Axis:
-                    var axis = Tao.Sdl.Sdl.SDL_JoystickGetAxis(device, this.ID);
+                case InputType.Axis:
+                    var axis = OpenTK.Platform.SDL2.API.GameControllerGetAxis(device, (OpenTK.Platform.SDL2.API.ControllerAxis)(this.ID));
                     if (this.Negative)
                     {
                         return (axis < -DeadZone);
                     }
                     return (axis > DeadZone);
                 case InputType.Button:
-                    return ((Tao.Sdl.Sdl.SDL_JoystickGetButton(device, this.ID) > 0) ^ this.Negative);
-                case InputType.PovUp:
-                case InputType.PovDown:
-                case InputType.PovLeft:
-                case InputType.PovRight:
-                    // Cast the type as an int to get the correct sdl mask for the hat
-                    return (((Tao.Sdl.Sdl.SDL_JoystickGetHat(device, this.ID) & (int)Type) > 0) ^ this.Negative);
-                case InputType.None:*/
+                    return ((OpenTK.Platform.SDL2.API.GameControllerGetButton(device, (OpenTK.Platform.SDL2.API.ControllerButton)(this.ID)) > 0) ^ this.Negative);
+                case InputType.None:
                 default:
                     return false;
             }
@@ -81,19 +75,14 @@ namespace Microsoft.Xna.Framework.Input
         internal float ReadFloat(IntPtr device)
         {
             float mask = this.Negative ? -1f : 1f;
-            /*switch (this.Type)
+            switch (this.Type)
             {
                 case InputType.Axis:
                     float range = this.Negative ? ((float)(-32768)) : ((float)0x7fff);
-                    return (((float)Tao.Sdl.Sdl.SDL_JoystickGetAxis(device, this.ID)) / range);
+                    return (((float)OpenTK.Platform.SDL2.API.GameControllerGetAxis(device, (OpenTK.Platform.SDL2.API.ControllerAxis)(this.ID))) / range);
                 case InputType.Button:
-                    return (Tao.Sdl.Sdl.SDL_JoystickGetButton(device, this.ID) * mask);
-                case InputType.PovUp:
-                case InputType.PovDown:
-                case InputType.PovLeft:
-                case InputType.PovRight:
-                    return ((Tao.Sdl.Sdl.SDL_JoystickGetHat(device, this.ID) & (int)Type) * mask);
-            }*/
+                    return (OpenTK.Platform.SDL2.API.GameControllerGetButton(device, (OpenTK.Platform.SDL2.API.ControllerButton)(this.ID)) * mask);
+            }
             return 0f;
 
         }
