@@ -1,3 +1,5 @@
+// vim: ts=4:sw=4:et
+
 using System;
 using OpenTK.Graphics.OpenGL;
 
